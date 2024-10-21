@@ -2,6 +2,13 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController {
 
+    @IBOutlet private weak var yesButton: UIButton!
+    @IBOutlet private weak var noButton: UIButton!
+
+    @IBOutlet private weak var textLabel: UILabel!
+    @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var counterLabel: UILabel!
+
     private let questions: [QuizQuestion] = [
         QuizQuestion(
             image: "The Godfather",
@@ -44,8 +51,9 @@ final class MovieQuizViewController: UIViewController {
             text: "Рейтинг этого фильма больше чем 6?",
             correctAnswer: false)
     ]
-    private var currentQuestionIndex = 0
-    private var correctAnswers = 0
+
+    private var currentQuestionIndex: Int = .zero
+    private var correctAnswers: Int = .zero
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,13 +65,16 @@ final class MovieQuizViewController: UIViewController {
     }
 
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        QuizStepViewModel(
+        .init(
             image: UIImage(named: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questions.count)")
     }
 
     private func show(quiz step: QuizStepViewModel) {
+        yesButton.isEnabled = true
+        noButton.isEnabled = true
+        
         textLabel.text = step.question
         imageView.image = step.image
         counterLabel.text = step.questionNumber
@@ -91,6 +102,10 @@ final class MovieQuizViewController: UIViewController {
     }
 
     private func showAnswerResult(isCorrect: Bool) {
+
+        yesButton.isEnabled = false
+        noButton.isEnabled = false
+
         let color: UIColor = isCorrect ? .ypGreen : .ypRed
         correctAnswers += isCorrect ? 1 : 0
 
@@ -120,10 +135,6 @@ final class MovieQuizViewController: UIViewController {
             show(quiz: convert(model: nextQuestion))
         }
     }
-
-    @IBOutlet private weak var textLabel: UILabel!
-    @IBOutlet private weak var imageView: UIImageView!
-    @IBOutlet private weak var counterLabel: UILabel!
 
     @IBAction private func noButonClicked(_ sender: Any) {
         let userAnswer = false
