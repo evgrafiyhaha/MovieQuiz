@@ -45,7 +45,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
     ]
 
     private var currentQuestionIndex: Int = .zero
-    weak private var delegate: QuestionFactoryDelegate?
+    private weak var delegate: QuestionFactoryDelegate?
 
     func setup(delegate: QuestionFactoryDelegate) {
         self.delegate = delegate

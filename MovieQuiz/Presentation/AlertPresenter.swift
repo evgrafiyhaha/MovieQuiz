@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 
 final class AlertPresenter {
-    weak private var delegate: UIViewController?
+    private weak var delegate: UIViewController?
 
     func setup(delegate: UIViewController) {
         self.delegate = delegate
