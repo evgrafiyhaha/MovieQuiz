@@ -8,11 +8,12 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
 
     @IBOutlet private weak var textLabel: UILabel!
     @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet private weak var counterLabel: UILabel!
 
     // MARK: - Private Properties
     private let questionsAmount: Int = 10
-    private var questionFactory: QuestionFactoryProtocol = QuestionFactory()
+    private var questionFactory: QuestionFactoryProtocol?
     private var alertPresenter: AlertPresenter = AlertPresenter()
     private var statisticService: StatisticServiceProtocol = StatisticService()
     private var currentQuestion: QuizQuestion?
@@ -24,17 +25,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        let questionFactory = QuestionFactory()
-        questionFactory.setup(delegate: self)
-        self.questionFactory = questionFactory
-
         let alertPresenter = AlertPresenter()
         alertPresenter.setup(delegate: self)
         self.alertPresenter = alertPresenter
 
-        statisticService = StatisticService()
-
-        questionFactory.requestNextQuestion()
+        self.questionFactory = QuestionFactory(moviesLoader: MoviesLoader(),delegate: self)
+        questionFactory?.loadData()
+        showLoadingIndicator()
 
     }
 
@@ -50,6 +47,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.show(quiz: viewModel)
         }
+    }
+
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true
+        questionFactory?.requestNextQuestion()
     }
 
     // MARK: - IB Actions
@@ -76,7 +82,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     // MARK: - Private Methods
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         .init(
-            image: UIImage(named: model.image) ?? UIImage(),
+            image: UIImage(data: model.image) ?? UIImage(),
             question: model.text,
             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
     }
@@ -96,7 +102,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
              self.currentQuestionIndex = .zero
              self.correctAnswers = .zero
 
-             questionFactory.requestNextQuestion()
+             questionFactory?.requestNextQuestion()
 
          }
         alertPresenter.showAlert(alert: alert)
@@ -136,9 +142,37 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         } else {
             currentQuestionIndex += 1
 
-            questionFactory.requestNextQuestion()
+            questionFactory?.requestNextQuestion()
         }
     }
+
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+        activityIndicator.stopAnimating()
+    }
+
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+
+        let model = AlertModel(title: "Ошибка",
+                               message: message,
+                               buttonText: "Попробовать еще раз") { [weak self] in
+            guard let self = self else { return }
+
+            self.currentQuestionIndex = .zero
+            self.correctAnswers = .zero
+
+            self.questionFactory?.requestNextQuestion()
+        }
+
+        alertPresenter.showAlert(alert: model)
+    }
+
     private func dateConverterMoscow(date: Date) -> String {
             let dateFormatter = DateFormatter()
             dateFormatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
@@ -146,67 +180,3 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             return dateFormatter.string(from: date)
         }
 }
-
-/*
- Mock-данные
-
-
- Картинка: The Godfather
- Настоящий рейтинг: 9,2
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Dark Knight
- Настоящий рейтинг: 9
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Kill Bill
- Настоящий рейтинг: 8,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Avengers
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Deadpool
- Настоящий рейтинг: 8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: The Green Knight
- Настоящий рейтинг: 6,6
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: ДА
-
-
- Картинка: Old
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: The Ice Age Adventures of Buck Wild
- Настоящий рейтинг: 4,3
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: Tesla
- Настоящий рейтинг: 5,1
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
-
-
- Картинка: Vivarium
- Настоящий рейтинг: 5,8
- Вопрос: Рейтинг этого фильма больше чем 6?
- Ответ: НЕТ
- */
