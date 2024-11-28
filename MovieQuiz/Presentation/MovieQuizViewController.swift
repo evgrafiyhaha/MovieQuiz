@@ -25,6 +25,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        activityIndicator.hidesWhenStopped = true
+
         let alertPresenter = AlertPresenter()
         alertPresenter.setup(delegate: self)
         self.alertPresenter = alertPresenter
@@ -54,7 +56,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     func didLoadDataFromServer() {
-        activityIndicator.isHidden = true
+        hideLoadingIndicator()
         questionFactory?.requestNextQuestion()
     }
 
@@ -90,21 +92,21 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func show(quiz step: QuizStepViewModel) {
         yesButton.isEnabled = true
         noButton.isEnabled = true
-        
+
         textLabel.text = step.question
         imageView.image = step.image
         counterLabel.text = step.questionNumber
     }
 
-     private func show(quiz result: QuizResultsViewModel) {
-         let alert = AlertModel(title: result.title, message: result.text, buttonText: result.buttonText) { [weak self] in
-             guard let self = self else { return }
-             self.currentQuestionIndex = .zero
-             self.correctAnswers = .zero
+    private func show(quiz result: QuizResultsViewModel) {
+        let alert = AlertModel(title: result.title, message: result.text, buttonText: result.buttonText) { [weak self] in
+            guard let self = self else { return }
+            self.currentQuestionIndex = .zero
+            self.correctAnswers = .zero
 
-             questionFactory?.requestNextQuestion()
+            questionFactory?.requestNextQuestion()
 
-         }
+        }
         alertPresenter.showAlert(alert: alert)
     }
 
@@ -147,12 +149,10 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
         activityIndicator.startAnimating()
     }
 
     private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
         activityIndicator.stopAnimating()
     }
 
@@ -174,9 +174,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
 
     private func dateConverterMoscow(date: Date) -> String {
-            let dateFormatter = DateFormatter()
-            dateFormatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
-            dateFormatter.timeZone = TimeZone(identifier: "Europe/Moscow")
-            return dateFormatter.string(from: date)
-        }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "dd.MM.yyyy HH:mm:ss"
+        dateFormatter.timeZone = TimeZone(identifier: "Europe/Moscow")
+        return dateFormatter.string(from: date)
+    }
 }

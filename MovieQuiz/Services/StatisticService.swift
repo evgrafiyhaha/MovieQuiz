@@ -1,7 +1,7 @@
 import Foundation
 
 final class StatisticService: StatisticServiceProtocol {
-
+    
     var gamesCount: Int {
         get {
             storage.integer(forKey: Keys.gamesCount.rawValue)
@@ -29,9 +29,9 @@ final class StatisticService: StatisticServiceProtocol {
         }
         return 100 * storage.double(forKey: Keys.totalCorrect.rawValue) / (10*Double(gamesCount))
     }
-
+    
     private let storage: UserDefaults = .standard
-
+    
     private enum Keys: String {
         case totalCorrect = "totalCorrect"
         case bestGameCorrect = "bestGame.correct"
@@ -39,7 +39,7 @@ final class StatisticService: StatisticServiceProtocol {
         case bestGameDate = "bestGame.date"
         case gamesCount = "gamesCount"
     }
-
+    
     func store(correct count: Int, total amount: Int) {
         gamesCount+=1
         let gameResult: GameResult = .init(correct: count, total: amount, date: Date())
@@ -48,6 +48,6 @@ final class StatisticService: StatisticServiceProtocol {
         }
         let totalCorrect: Int = storage.integer(forKey: Keys.totalCorrect.rawValue) + count
         storage.set(totalCorrect,forKey: Keys.totalCorrect.rawValue)
-
+        
     }
 }
