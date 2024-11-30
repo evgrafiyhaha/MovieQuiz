@@ -2,6 +2,7 @@ import Foundation
 
 protocol MoviesLoading {
     func loadMovies(handler: @escaping (Result<MostPopularMovies, Error>) -> Void)
+    func loadImage(url: URL,handler: @escaping (Result<Data, Error>) -> Void)
 }
 
 struct MoviesLoader: MoviesLoading {
@@ -28,6 +29,16 @@ struct MoviesLoader: MoviesLoading {
                 } catch {
                     handler(.failure(error))
                 }
+            case .failure(let error):
+                handler(.failure(error))
+            }
+        }
+    }
+    func loadImage(url: URL, handler: @escaping (Result<Data, Error>) -> Void) {
+        networkClient.fetchImage(url: url) { result in
+            switch result {
+            case .success(let data):
+                handler(.success(data))
             case .failure(let error):
                 handler(.failure(error))
             }
